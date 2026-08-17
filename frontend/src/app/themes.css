@@ -1,0 +1,346 @@
+/* ──────────────────────────────────────────────────────────────────────────
+   Multi-theme tokens. Colors are space-separated RGB so Tailwind opacity
+   modifiers (`bg-forest-800/20`) keep working.
+
+   The 5 themes map to the 5 visual worlds of the resort:
+     himalayan → THE WILD     (Himalayan / Earth)
+     ocean     → THE OCEAN    (Ocean Sanctuary)
+     galaxy    → THE INFINITE (Interstellar Space)
+     sage      → THE ANCIENT  (Prehistoric Earth)
+     cosmic    → AFTER DARK   (Midnight Sanctuary)
+   ────────────────────────────────────────────────────────────────────────── */
+
+:root,
+[data-theme="himalayan"] {
+  color-scheme: light;
+  --theme-color: #c7a664;
+  --page: 252 252 250;
+  --surface: 247 246 241;
+  --surface-2: 237 235 227;
+  --card: 255 255 255;
+  --ink: 26 26 26;
+  --ink-muted: 107 107 107;
+  --ink-subtle: 154 154 149;
+  --border-soft: 232 230 224;
+  --border: 224 220 211;
+  --inverse-fg: 247 246 241;
+  --inverse-bg: 15 31 23;
+  --forest-50: 242 247 244;
+  --forest-100: 224 235 227;
+  --forest-200: 191 213 197;
+  --forest-300: 156 187 165;
+  --forest-400: 122 162 134;
+  --forest-500: 90 136 103;
+  --forest-600: 68 110 80;
+  --forest-700: 54 87 63;
+  --forest-800: 45 95 63;
+  --forest-900: 31 61 42;
+  --forest-950: 15 31 23;
+  /* Warm gold/amber accent — used for the "Luxury" script italic word,
+     focus rings, and primary highlights. Pushed more golden than before. */
+  --sun-50: 253 247 235;
+  --sun-100: 250 238 210;
+  --sun-200: 244 217 168;
+  --sun-300: 232 188 122;
+  --sun-400: 215 175 105;
+  --sun-500: 199 166 100;
+  --sun-600: 168 134 76;
+  --wave-400: 56 189 248;
+  --wave-500: 14 165 233;
+  --wave-600: 2 132 199;
+  --font-display: var(--font-cormorant), Georgia, "Times New Roman", serif;
+  --font-body: var(--font-inter), system-ui, sans-serif;
+  --radius-md: 1.25rem;
+  --radius-card: 1.75rem;
+  --radius-xl: 2.25rem;
+  --shadow-soft: 0 1px 2px rgba(15, 31, 23, 0.04), 0 4px 12px rgba(15, 31, 23, 0.04);
+  --shadow-lift: 0 4px 12px rgba(15, 31, 23, 0.06), 0 12px 32px rgba(15, 31, 23, 0.08);
+  --shadow-glass:
+    0 24px 64px -12px rgba(15, 31, 23, 0.18), 0 8px 24px -8px rgba(15, 31, 23, 0.1),
+    0 1px 0 rgba(255, 255, 255, 0.7) inset;
+  --shadow-glow: 0 0 0 4px rgb(199 166 100 / 0.16);
+  --glass-bg: rgb(255 255 255 / 0.55);
+  --glass-border: rgb(255 255 255 / 0.42);
+  --field-bg: rgb(255 255 255 / 0.92);
+  --hero-wash: linear-gradient(180deg, rgba(15, 31, 23, 0) 0%, rgba(15, 31, 23, 0.18) 65%, rgba(15, 31, 23, 0.7) 100%);
+  --hero-glow: 215 175 105;
+  --hero-photo-opacity: 1;
+  --hero-photo-filter: none;
+  --atmosphere: none;
+  --atmosphere-pattern: none;
+  --atmosphere-color: transparent;
+}
+
+[data-theme="ocean"] {
+  color-scheme: dark;
+  --theme-color: #5ec8d8;
+  --page: 6 14 22;
+  --surface: 10 24 36;
+  --surface-2: 14 34 50;
+  --card: 10 26 40;
+  --ink: 242 250 254;
+  --ink-muted: 175 205 222;
+  --ink-subtle: 138 172 190;
+  --border-soft: 32 68 90;
+  --border: 44 92 118;
+  --inverse-fg: 242 250 254;
+  --inverse-bg: 4 12 18;
+  --forest-50: 14 40 56;
+  --forest-100: 18 52 72;
+  --forest-200: 24 72 98;
+  --forest-300: 42 112 140;
+  --forest-400: 68 162 192;
+  --forest-500: 94 200 216;
+  --forest-600: 70 178 200;
+  --forest-700: 56 156 180;
+  --forest-800: 94 200 216;
+  --forest-900: 180 232 248;
+  --forest-950: 242 250 254;
+  --sun-50: 22 42 58;
+  --sun-100: 32 68 92;
+  --sun-200: 60 132 164;
+  --sun-300: 110 200 224;
+  --sun-400: 180 232 248;
+  --sun-500: 155 222 242;
+  --sun-600: 245 180 80;
+  --wave-400: 180 232 248;
+  --wave-500: 135 218 240;
+  --wave-600: 85 180 210;
+  --font-display: var(--font-cormorant), Georgia, "Times New Roman", serif;
+  --font-body: var(--font-inter), system-ui, sans-serif;
+  --radius-md: 1.2rem;
+  --radius-card: 1.5rem;
+  --radius-xl: 2rem;
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.35), 0 8px 24px rgba(4, 16, 24, 0.45);
+  --shadow-lift: 0 16px 48px rgba(0, 0, 0, 0.45), 0 0 40px rgb(167 224 242 / 0.1);
+  --shadow-glass:
+    0 24px 64px -16px rgba(0, 0, 0, 0.55), 0 0 0 1px rgb(167 224 242 / 0.18),
+    0 1px 0 rgb(255 255 255 / 0.08) inset;
+  --shadow-glow: 0 0 0 4px rgb(167 224 242 / 0.18);
+  --glass-bg: rgb(8 24 36 / 0.58);
+  --glass-border: rgb(167 224 242 / 0.22);
+  --field-bg: rgb(8 24 36 / 0.9);
+  --hero-wash: linear-gradient(180deg, rgba(6, 14, 22, 0) 0%, rgba(6, 14, 22, 0.18) 65%, rgba(6, 14, 22, 0.7) 100%);
+  --hero-glow: 167 224 242;
+  --hero-photo-opacity: 1;
+  --hero-photo-filter: none;
+  --atmosphere: none;
+  --atmosphere-pattern: none;
+  --atmosphere-color: transparent;
+}
+
+[data-theme="galaxy"] {
+  color-scheme: dark;
+  --theme-color: #c084fc;
+  --page: 8 6 18;
+  --surface: 18 14 32;
+  --surface-2: 26 20 46;
+  --card: 16 12 30;
+  --ink: 248 245 255;
+  --ink-muted: 205 195 230;
+  --ink-subtle: 165 152 195;
+  --border-soft: 64 48 100;
+  --border: 90 68 140;
+  --inverse-fg: 248 245 255;
+  --inverse-bg: 6 5 12;
+  --forest-50: 32 20 56;
+  --forest-100: 48 28 84;
+  --forest-200: 74 44 128;
+  --forest-300: 118 72 200;
+  --forest-400: 168 112 245;
+  --forest-500: 192 132 252;
+  --forest-600: 168 85 247;
+  --forest-700: 147 51 234;
+  --forest-800: 192 132 252;
+  --forest-900: 216 180 254;
+  --forest-950: 248 245 255;
+  --sun-50: 42 22 58;
+  --sun-100: 68 36 96;
+  --sun-200: 130 68 198;
+  --sun-300: 198 126 250;
+  --sun-400: 232 216 255;
+  --sun-500: 212 188 255;
+  --sun-600: 245 165 36;
+  --wave-400: 232 121 249;
+  --wave-500: 192 132 252;
+  --wave-600: 147 51 234;
+  --font-display: var(--font-cormorant), Georgia, "Times New Roman", serif;
+  --font-body: var(--font-inter), system-ui, sans-serif;
+  --radius-md: 1.15rem;
+  --radius-card: 1.35rem;
+  --radius-xl: 1.85rem;
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(20, 8, 40, 0.5);
+  --shadow-lift: 0 16px 48px rgba(0, 0, 0, 0.5), 0 0 48px rgb(217 200 255 / 0.12);
+  --shadow-glass:
+    0 24px 64px -16px rgba(0, 0, 0, 0.6), 0 0 0 1px rgb(217 200 255 / 0.18),
+    0 1px 0 rgb(255 255 255 / 0.08) inset;
+  --shadow-glow: 0 0 0 4px rgb(217 200 255 / 0.2);
+  --glass-bg: rgb(16 12 28 / 0.6);
+  --glass-border: rgb(217 200 255 / 0.24);
+  --field-bg: rgb(24 18 42 / 0.95);
+  --hero-wash: linear-gradient(180deg, rgba(8, 6, 18, 0) 0%, rgba(8, 6, 18, 0.18) 65%, rgba(8, 6, 18, 0.7) 100%);
+  --hero-glow: 217 200 255;
+  --hero-photo-opacity: 1;
+  --hero-photo-filter: none;
+  --atmosphere: none;
+  --atmosphere-pattern: none;
+  --atmosphere-color: transparent;
+}
+
+[data-theme="sage"] {
+  color-scheme: light;
+  --theme-color: #c7884a;
+  --page: 248 242 230;
+  --surface: 240 230 212;
+  --surface-2: 228 214 190;
+  --card: 255 253 248;
+  --ink: 28 18 10;
+  --ink-muted: 74 54 36;
+  --ink-subtle: 115 88 58;
+  --border-soft: 218 196 162;
+  --border: 192 165 125;
+  --inverse-fg: 252 246 234;
+  --inverse-bg: 26 18 8;
+  --forest-50: 244 234 214;
+  --forest-100: 232 214 178;
+  --forest-200: 208 178 132;
+  --forest-300: 182 144 94;
+  --forest-400: 156 114 70;
+  --forest-500: 130 92 52;
+  --forest-600: 108 74 40;
+  --forest-700: 88 60 30;
+  --forest-800: 68 44 20;
+  --forest-900: 48 30 14;
+  --forest-950: 26 18 8;
+  --sun-50: 254 246 226;
+  --sun-100: 248 232 190;
+  --sun-200: 240 206 142;
+  --sun-300: 226 174 96;
+  --sun-400: 236 190 110;
+  --sun-500: 210 156 74;
+  --sun-600: 152 98 24;
+  --wave-400: 226 158 84;
+  --wave-500: 192 128 58;
+  --wave-600: 148 94 44;
+  --font-display: var(--font-cormorant), Georgia, "Times New Roman", serif;
+  --font-body: var(--font-inter), system-ui, sans-serif;
+  --radius-md: 1.4rem;
+  --radius-card: 2rem;
+  --radius-xl: 2.6rem;
+  --shadow-soft: 0 1px 2px rgba(56, 36, 16, 0.06), 0 6px 16px rgba(56, 36, 16, 0.08);
+  --shadow-lift: 0 8px 20px rgba(56, 36, 16, 0.1), 0 20px 40px rgba(56, 36, 16, 0.12);
+  --shadow-glass:
+    0 24px 56px -16px rgba(56, 36, 16, 0.18), 0 1px 0 rgba(255, 255, 255, 0.65) inset;
+  --shadow-glow: 0 0 0 4px rgb(242 198 121 / 0.18);
+  --glass-bg: rgb(252 246 234 / 0.62);
+  --glass-border: rgb(255 255 255 / 0.46);
+  --field-bg: rgb(255 254 250 / 0.96);
+  --hero-wash: linear-gradient(180deg, rgba(26, 18, 8, 0) 0%, rgba(26, 18, 8, 0.18) 65%, rgba(26, 18, 8, 0.7) 100%);
+  --hero-glow: 242 198 121;
+  --hero-photo-opacity: 1;
+  --hero-photo-filter: none;
+  --atmosphere: none;
+  --atmosphere-pattern: none;
+  --atmosphere-color: transparent;
+}
+
+[data-theme="cosmic"] {
+  color-scheme: dark;
+  --theme-color: #9fb6d6;
+  --page: 5 9 18;
+  --surface: 12 20 34;
+  --surface-2: 18 28 48;
+  --card: 14 24 40;
+  --ink: 242 246 252;
+  --ink-muted: 192 208 230;
+  --ink-subtle: 148 168 194;
+  --border-soft: 38 58 84;
+  --border: 56 82 116;
+  --inverse-fg: 242 246 252;
+  --inverse-bg: 4 8 14;
+  --forest-50: 18 34 56;
+  --forest-100: 26 48 78;
+  --forest-200: 38 68 108;
+  --forest-300: 68 112 168;
+  --forest-400: 125 174 232;
+  --forest-500: 159 202 248;
+  --forest-600: 125 180 240;
+  --forest-700: 96 165 250;
+  --forest-800: 147 197 253;
+  --forest-900: 186 218 255;
+  --forest-950: 242 246 252;
+  --sun-50: 28 38 56;
+  --sun-100: 40 58 84;
+  --sun-200: 72 108 152;
+  --sun-300: 128 178 226;
+  --sun-400: 186 218 255;
+  --sun-500: 215 232 255;
+  --sun-600: 245 190 85;
+  --wave-400: 186 218 255;
+  --wave-500: 140 188 238;
+  --wave-600: 96 150 210;
+  --font-display: var(--font-cormorant), Georgia, "Times New Roman", serif;
+  --font-body: var(--font-inter), system-ui, sans-serif;
+  --radius-md: 1rem;
+  --radius-card: 1.15rem;
+  --radius-xl: 1.6rem;
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.35), 0 8px 24px rgba(4, 8, 14, 0.45);
+  --shadow-lift: 0 12px 40px rgba(0, 0, 0, 0.45), 0 0 40px rgb(159 182 214 / 0.1);
+  --shadow-glass:
+    0 24px 64px -16px rgba(0, 0, 0, 0.55), 0 0 0 1px rgb(159 182 214 / 0.18),
+    0 1px 0 rgb(255 255 255 / 0.08) inset;
+  --shadow-glow: 0 0 0 4px rgb(159 182 214 / 0.2);
+  --glass-bg: rgb(8 16 28 / 0.58);
+  --glass-border: rgb(159 182 214 / 0.22);
+  --field-bg: rgb(16 28 46 / 0.95);
+  --hero-wash: linear-gradient(180deg, rgba(5, 9, 18, 0) 0%, rgba(5, 9, 18, 0.18) 65%, rgba(5, 9, 18, 0.7) 100%);
+  --hero-glow: 159 182 214;
+  --hero-photo-opacity: 1;
+  --hero-photo-filter: none;
+  --atmosphere: none;
+  --atmosphere-pattern: none;
+  --atmosphere-color: transparent;
+}
+
+/* Atmosphere + hero treatments */
+.theme-atmosphere {
+  background: var(--atmosphere);
+}
+.theme-atmosphere::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--atmosphere-pattern);
+  color: var(--atmosphere-color);
+  opacity: 0.7;
+}
+
+.theme-hero-photo {
+  opacity: var(--hero-photo-opacity);
+  filter: var(--hero-photo-filter);
+  transition: opacity 500ms ease, filter 500ms ease;
+}
+
+.theme-hero-photo,
+img.absolute.inset-0.h-full.w-full.object-cover {
+  image-rendering: auto;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.theme-hero-wash {
+  position: absolute;
+  inset: 0;
+  background: var(--hero-wash);
+  pointer-events: none;
+}
+
+.theme-hero-glow {
+  position: absolute;
+  inset: auto auto -10% 10%;
+  width: 50%;
+  height: 40%;
+  background: radial-gradient(closest-side, rgb(var(--hero-glow) / 0.22), transparent 70%);
+  filter: blur(8px);
+  pointer-events: none;
+}

@@ -1,0 +1,844 @@
+// Sun & Water Resort — Prisma schema
+// SQLite (dev). Switch to "postgresql" in production.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Tenancy ───────────────────────────────────────────────────────
+
+model Resort {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  name            String
+  description     String?
+  logoUrl         String?
+  heroImageUrl    String?
+  phone           String
+  whatsapp        String?
+  email           String
+  address         String
+  city            String
+  state           String
+  country         String   @default("India")
+  latitude        Float?
+  longitude       Float?
+  checkInTime     String   @default("14:00")
+  checkOutTime    String   @default("11:00")
+  timezone        String   @default("Asia/Kolkata")
+  currency        String   @default("INR")
+  status          String   @default("ACTIVE") // ACTIVE | PAUSED | CLOSED
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  staff              Staff[]
+  guests             Guest[]
+  roomTypes          RoomType[]
+  rooms              Room[]
+  reservations       Reservation[]
+  holds              ReservationHold[]
+  movements          RoomMovement[]
+  payments           Payment[]
+  extensions         ExtensionRequest[]
+  enquiries          Enquiry[]
+  offers             Offer[]
+  roomRates          RoomRate[]
+  pricingRules       PricingRule[]
+  ratePlans          RatePlan[]
+  housekeepingTasks  HousekeepingTask[]
+  maintenanceRecords MaintenanceRecord[]
+  galleryCategories  GalleryCategory[]
+  galleryImages      GalleryImage[]
+  reviews            Review[]
+  attractions        NearbyAttraction[]
+  amenitySections    AmenitySection[]
+  pages              Page[]
+  websiteSections    WebsiteSection[]
+  websiteSettings    WebsiteSetting[]
+  auditLogs          AuditLog[]
+  notifications      Notification[]
+  rolePermissions    RolePermission[]
+
+  @@index([slug, status])
+}
+
+// ─── Identity & access ──────────────────────────────────────────────
+
+model Staff {
+  id                String          @id @default(cuid())
+  resortId          String
+  resort            Resort          @relation(fields: [resortId], references: [id], onDelete: Cascade)
+  email             String
+  passwordHash      String
+  name              String
+  phone             String?
+  roleKey           String
+  status            String          @default("ACTIVE")
+  lastLoginAt       DateTime?
+  failedLoginCount  Int             @default(0)
+  lockedUntil       DateTime?
+  emailVerifiedAt   DateTime?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  deletedAt         DateTime?
+
+  sessions             StaffSession[]
+  passwordResets       PasswordReset[]
+  auditLogs            AuditLog[]
+  assignedHkTasks      HousekeepingTask[]     @relation("HkAssignee")
+  reportedMaintenance  MaintenanceRecord[]    @relation("MaintReporter")
+  assignedMaintenance  MaintenanceRecord[]    @relation("MaintAssignee")
+  createdReservations  Reservation[]         @relation("ReservationCreator")
+  cancelledReservations Reservation[]        @relation("ReservationCanceller")
+  enquiryAssignments   Enquiry[]             @relation("EnquiryAssignee")
+  bookingNotes         BookingNote[]
+
+  @@unique([resortId, email])
+  @@index([resortId, roleKey, status])
+}
+
+model StaffSession {
+  id                String   @id @default(cuid())
+  resortId          String
+  staffId           String
+  staff             Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  refreshTokenHash  String   @unique
+  userAgent         String?
+  ip                String?
+  expiresAt         DateTime
+  revokedAt         DateTime?
+  createdAt         DateTime @default(now())
+  rotatedFromId     String?
+
+  @@index([staffId, expiresAt])
+  @@index([resortId, staffId])
+}
+
+model PasswordReset {
+  id        String   @id @default(cuid())
+  staffId   String
+  staff     Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+}
+
+model Role {
+  id          String           @id @default(cuid())
+  resortId    String?
+  key         String
+  name        String
+  description String?
+  isSystem    Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+
+  permissions RolePermission[]
+
+  @@unique([resortId, key])
+  @@index([key])
+}
+
+model Permission {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  group       String
+  description String?
+  roles       RolePermission[]
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  resortId     String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  resort       Resort     @relation(fields: [resortId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@index([resortId, roleId])
+}
+
+// ─── Public customers ───────────────────────────────────────────────
+
+model Guest {
+  id            String        @id @default(cuid())
+  resortId      String
+  resort        Resort        @relation(fields: [resortId], references: [id], onDelete: Cascade)
+  fullName      String
+  email         String?
+  phone         String
+  countryCode   String        @default("+91")
+  address       String?
+  idType        String?
+  idNumber      String?
+  notes         String?
+  preferences   String?       // JSON-encoded
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  reservations  Reservation[]
+
+  @@unique([resortId, phone, countryCode])
+  @@index([resortId, email])
+  @@index([resortId, fullName])
+}
+
+// ─── Rooms & inventory ──────────────────────────────────────────────
+
+model RoomType {
+  id              String   @id @default(cuid())
+  resortId        String
+  resort          Resort   @relation(fields: [resortId], references: [id], onDelete: Cascade)
+  slug            String
+  name            String
+  description     String?
+  shortDesc       String?
+  maxAdults       Int
+  maxChildren     Int      @default(0)
+  maxOccupancy    Int
+  bedConfiguration String?
+  areaSqft        Int?
+  view            String?
+  basePrice       Int      // paise
+  totalUnits      Int
+  status          String   @default("ACTIVE")
+  displayOrder    Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+
+  amenities       RoomTypeAmenity[]
+  photos          RoomTypePhoto[]
+  rooms           Room[]
+  rates           RoomRate[]
+  offerRoomTypes  OfferRoomType[]
+  holdLines       ReservationHold[]
+  reservationLines Reservation[]
+
+  @@unique([resortId, slug])
+  @@index([resortId, status, displayOrder])
+}
+
+model Room {
+  id              String   @id @default(cuid())
+  resortId        String
+  resort          Resort   @relation(fields: [resortId], references: [id], onDelete: Cascade)
+  roomTypeId      String
+  roomType        RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Restrict)
+  roomNumber      String
+  floor           String?
+  building        String?
+  status          String   @default("READY")
+  notes           String?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  photos            RoomPhoto[]
+  housekeepingTasks HousekeepingTask[]
+  maintenanceRecords MaintenanceRecord[]
+  movementsFrom     RoomMovement[]    @relation("FromRoom")
+  movementsTo       RoomMovement[]    @relation("ToRoom")
+  assignments       RoomAssignment[]
+
+  @@unique([resortId, roomNumber])
+  @@index([resortId, roomTypeId, status])
+}
+
+model RoomAssignment {
+  id             String   @id @default(cuid())
+  resortId       String
+  reservationId  String
+  reservation    Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  roomId         String
+  room           Room     @relation(fields: [roomId], references: [id])
+  assignedAt     DateTime @default(now())
+  assignedById   String?
+  releasedAt     DateTime?
+  releaseReason  String?
+
+  @@index([reservationId])
+  @@index([roomId, releasedAt])
+}
+
+model RoomMovement {
+  id             String   @id @default(cuid())
+  resortId       String
+  reservationId  String
+  reservation    Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  fromRoomId     String
+  fromRoom       Room     @relation("FromRoom", fields: [fromRoomId], references: [id])
+  toRoomId       String
+  toRoom         Room     @relation("ToRoom", fields: [toRoomId], references: [id])
+  reason         String
+  performedById  String
+  performedAt    DateTime @default(now())
+  notes          String?
+
+  resort Resort? @relation(fields: [resortId], references: [id], onDelete: Cascade)
+
+  @@index([reservationId])
+}
+
+model Amenity {
+  id        String  @id @default(cuid())
+  key       String  @unique
+  name      String
+  icon      String?
+  category  String?
+  roomTypes RoomTypeAmenity[]
+}
+
+model RoomTypeAmenity {
+  roomTypeId String
+  amenityId  String
+  roomType   RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
+  amenity    Amenity  @relation(fields: [amenityId], references: [id], onDelete: Cascade)
+
+  @@id([roomTypeId, amenityId])
+}
+
+model RoomTypePhoto {
+  id           String   @id @default(cuid())
+  resortId     String
+  roomTypeId   String
+  roomType     RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
+  url          String
+  publicId     String
+  alt          String?
+  isCover      Boolean  @default(false)
+  displayOrder Int      @default(0)
+
+  @@index([roomTypeId, displayOrder])
+}
+
+model RoomPhoto {
+  id           String   @id @default(cuid())
+  resortId     String
+  roomId       String
+  room         Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  url          String
+  publicId     String
+  alt          String?
+  isCover      Boolean  @default(false)
+  displayOrder Int      @default(0)
+
+  @@index([roomId, displayOrder])
+}
+
+// ─── Pricing ────────────────────────────────────────────────────────
+
+model RoomRate {
+  id          String   @id @default(cuid())
+  resortId    String
+  resort      Resort   @relation(fields: [resortId], references: [id], onDelete: Cascade)
+  roomTypeId  String
+  roomType    RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
+  startDate   DateTime
+  endDate     DateTime
+  rate        Int
+  ratePlanKey String?
+  minNights   Int?
+  maxNights   Int?
+  priority    Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  @@index([resortId, roomTypeId, startDate, endDate, active, priority])
+}
+
+model PricingRule {
+  id              String   @id @default(cuid())
+  resortId        String
+  resort          Resort   @relation(fields: [resortId], references: [id], onDelete: Cascade)
+  roomTypeId      String?
+  kind            String   // WEEKEND | SEASONAL | HOLIDAY | LAST_MINUTE
+  daysOfWeek      String?  // JSON array as string, e.g. "[5,6]"
+  startDate       DateTime?
+  endDate         DateTime?
+  adjustmentType  String   // PERCENT | FLAT
+  adjustmentValue Int
+  minNights       Int?
+  maxNights       Int?
+  priority        Int      @default(0)
+  active          Boolean  @default(true)
+
+  @@index([resortId, active, priority])
+}
+
+model RatePlan {
+  id                String   @id @default(cuid())
+  resortId          String
+  resort            Resort   @relation(fields: [resortId], references: [id], onDelete: Cascade)
+  key               String
+  name              String
+  description       String?
+  adjustmentType    String
+  adjustmentValue   Int
+  minNights         Int?
+  nonRefundable     Boolean  @default(false)
+  includesBreakfast Boolean  @default(false)
+  active            Boolean  @default(true)
+  displayOrder      Int      @default(0)
+
+  @@unique([resortId, key])
+}
+
+model Offer {
+  id            String   @id @default(cuid())
+  resortId      String
+  resort        Resort   @relation(fields: [resortId], references: [id], onDelete: Cascade)
+  slug          String
+  name          String
+  description   String
+  shortDesc     String?
+  imageUrl      String?
+  discountType  String   // PERCENT | FLAT
+  discountValue Int
+  minNights     Int?
+  promoCode     String?  @unique
+  startDate     DateTime
+  endDate       DateTime
+  terms         String?
+  status        String   @default("DRAFT") // DRAFT | PUBLISHED | PAUSED | EXPIRED
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  deletedAt     DateTime?
+
+  roomTypes    OfferRoomType[]
+  reservations Reservation[]
+
+  @@unique([resortId, slug])
+  @@index([resortId, status, startDate, endDate])
+}
+
+model OfferRoomType {
+  offerId    String
+  roomTypeId String
+  offer      Offer    @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  roomType   RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
+
+  @@id([offerId, roomTypeId])
+}
+
+// ─── Reservations ───────────────────────────────────────────────────
+
+model Reservation {
+  id                String   @id @default(cuid())
+  resortId          String
+  resort            Resort   @relation(fields: [resortId], references: [id], onDelete: Cascade)
+  bookingReference  String
+  guestId           String
+  guest             Guest    @relation(fields: [guestId], references: [id])
+  roomTypeId        String
+  roomType          RoomType @relation(fields: [roomTypeId], references: [id])
+
+  checkIn           DateTime
+  checkOut          DateTime
+  nights            Int
+  adults            Int
+  children          Int      @default(0)
+  roomCount         Int      @default(1)
+
+  status            String   // PENDING | HELD | CONFIRMED | CHECKED_IN | CHECKED_OUT | CANCELLED | NO_SHOW | EXPIRED
+  source            String   // WEBSITE | WALK_IN | PHONE | WHATSAPP | ADMIN | OTA
+
+  nightlyRate       Int
+  subtotal          Int
+  discount          Int      @default(0)
+  taxAmount         Int      @default(0)
+  totalAmount       Int
+  amountPaid        Int      @default(0)
+  amountDue         Int      @default(0)
+  currency          String   @default("INR")
+
+  offerId           String?
+  offer             Offer?   @relation(fields: [offerId], references: [id])
+  promoCode         String?
+
+  specialRequests   String?
+  arrivalTime       String?
+  internalNotes     String?
+
+  holdExpiresAt     DateTime?
+  confirmedAt       DateTime?
+  checkedInAt       DateTime?
+  checkedOutAt      DateTime?
+  cancelledAt       DateTime?
+  cancelledById     String?
+  cancellationReason String?
+  noShowAt          DateTime?
+
+  createdById       String?
+  createdBy         Staff?   @relation("ReservationCreator", fields: [createdById], references: [id])
+  cancelledBy       Staff?   @relation("ReservationCanceller", fields: [cancelledById], references: [id])
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  assignments  RoomAssignment[]
+  movements    RoomMovement[]
+  payments     Payment[]
+  extensions   ExtensionRequest[]
+  events       ReservationEvent[]
+  notes        BookingNote[]
+
+  @@unique([resortId, bookingReference])
+  @@index([resortId, status, checkIn])
+  @@index([resortId, checkIn, checkOut])
+  @@index([resortId, guestId])
+  @@index([resortId, source])
+}
+
+model ReservationHold {
+  id            String   @id @default(cuid())
+  resortId      String
+  resort        Resort   @relation(fields: [resortId], references: [id], onDelete: Cascade)
+  roomTypeId    String
+  roomType      RoomType @relation(fields: [roomTypeId], references: [id])
+  quantity      Int
+  checkIn       DateTime
+  checkOut      DateTime
+  sessionId     String
+  status        String   @default("ACTIVE") // ACTIVE | EXPIRED | CONVERTED | RELEASED
+  expiresAt     DateTime
+  createdAt     DateTime @default(now())
+  convertedReservationId String?
+  releasedAt    DateTime?
+  releaseReason String?
+  // snapshot of pricing at hold time
+  nightlyRate   Int
+  totalAmount   Int
+  currency      String   @default("INR")
+
+  @@index([resortId, status, expiresAt])
+  @@index([resortId, roomTypeId, status])
+  @@index([sessionId])
+}
+
+model ReservationEvent {
+  id            String   @id @default(cuid())
+  resortId      String
+  reservationId String
+  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  type          String
+  payload       String?  // JSON-encoded
+  actorType     String   // guest | staff | system
+  actorId       String?
+  createdAt     DateTime @default(now())
+
+  @@index([reservationId, createdAt])
+}
+
+model BookingNote {
+  id            String   @id @default(cuid())
+  resortId      String
+  reservationId String
+  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  authorId      String
+  author        Staff    @relation(fields: [authorId], references: [id])
+  body          String
+  createdAt     DateTime @default(now())
+}
+
+model ExtensionRequest {
+  id                 String   @id @default(cuid())
+  resortId           String
+  resort             Resort   @relation(fields: [resortId], references: [id], onDelete: Cascade)
+  reservationId      String
+  reservation        Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  currentCheckOut    DateTime
+  requestedCheckOut  DateTime
+  decision           String?  // APPROVED | REJECTED
+  decisionById       String?
+  decisionAt         DateTime?
+  decisionNote       String?
+  additionalAmount   Int?
+  createdAt          DateTime @default(now())
+
+  @@index([reservationId])
+}
+
+// ─── Payments ───────────────────────────────────────────────────────
+
+model Payment {
+  id                  String   @id @default(cuid())
+  resortId            String
+  resort              Resort   @relation(fields: [resortId], references: [id], onDelete: Cascade)
+  reservationId       String
+  reservation         Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  amount              Int
+  currency            String   @default("INR")
+  method              String   // RAZORPAY | UPI | CASH | BANK_TRANSFER | CHEQUE | CARD | OTHER | REFUND
+  status              String   // CREATED | AUTHORIZED | CAPTURED | FAILED | REFUNDED | PARTIALLY_REFUNDED
+  provider            String?
+  providerOrderId     String?
+  providerPaymentId   String?
+  providerSignature   String?
+  reference           String?
+  notes               String?
+  recordedById        String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([resortId, reservationId, status])
+  @@unique([provider, providerPaymentId])
+}
+
+// ─── Enquiries ──────────────────────────────────────────────────────
+
+model Enquiry {
+  id                String   @id @default(cuid())
+  resortId          String
+  resort            Resort   @relation(fields: [resortId], references: [id], onDelete: Cascade)
+  name              String
+  phone             String
+  email             String?
+  requestedCheckIn  DateTime?
+  requestedCheckOut DateTime?
+  adults            Int?
+  children          Int?
+  roomTypeId        String?
+  message           String?
+  source            String   // WEBSITE_FORM | WHATSAPP | PHONE | WALK_IN | OTHER
+  status            String   @default("NEW") // NEW | CONTACTED | AWAITING_RESPONSE | CONVERTED | LOST | SPAM
+  assignedToId      String?
+  assignedTo        Staff?   @relation("EnquiryAssignee", fields: [assignedToId], references: [id])
+  convertedReservationId String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  notes EnquiryNote[]
+
+  @@index([resortId, status, createdAt])
+}
+
+model EnquiryNote {
+  id         String   @id @default(cuid())
+  resortId   String
+  enquiryId  String
+  enquiry    Enquiry  @relation(fields: [enquiryId], references: [id], onDelete: Cascade)
+  authorId   String
+  body       String
+  createdAt  DateTime @default(now())
+}
+
+// ─── Housekeeping & maintenance ─────────────────────────────────────
+
+model HousekeepingTask {
+  id           String   @id @default(cuid())
+  resortId     String
+  resort       Resort   @relation(fields: [resortId], references: [id], onDelete: Cascade)
+  roomId       String
+  room         Room     @relation(fields: [roomId], references: [id])
+  type         String   // CHECKOUT_CLEAN | TURN_DOWN | DEEP_CLEAN | INSPECTION | TOUCH_UP
+  status       String   @default("PENDING")
+  priority     String   @default("NORMAL")
+  reservationId String?
+  notes        String?
+  assignedToId String?
+  assignedTo   Staff?   @relation("HkAssignee", fields: [assignedToId], references: [id])
+  startedAt    DateTime?
+  completedAt  DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([resortId, status, priority])
+  @@index([roomId, status])
+}
+
+model MaintenanceRecord {
+  id              String   @id @default(cuid())
+  resortId        String
+  resort          Resort   @relation(fields: [resortId], references: [id], onDelete: Cascade)
+  roomId          String
+  room            Room     @relation(fields: [roomId], references: [id])
+  issue           String
+  description     String?
+  priority        String   @default("NORMAL")
+  status          String   @default("OPEN")
+  reportedById    String
+  reportedBy      Staff    @relation("MaintReporter", fields: [reportedById], references: [id])
+  assignedToId    String?
+  assignedTo      Staff?   @relation("MaintAssignee", fields: [assignedToId], references: [id])
+  startedAt       DateTime?
+  resolvedAt      DateTime?
+  expectedReadyAt DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// ─── CMS / website content ──────────────────────────────────────────
+
+model WebsiteSetting {
+  id        String   @id @default(cuid())
+  resortId  String
+  resort    Resort   @relation(fields: [resortId], references: [id], onDelete: Cascade)
+  key       String
+  value     String   // JSON-encoded
+  updatedAt DateTime @updatedAt
+  updatedById String?
+
+  @@unique([resortId, key])
+}
+
+model WebsiteSection {
+  id         String   @id @default(cuid())
+  resortId   String
+  resort     Resort   @relation(fields: [resortId], references: [id], onDelete: Cascade)
+  key        String
+  title      String?
+  content    String   // JSON-encoded
+  order      Int      @default(0)
+  active     Boolean  @default(true)
+  updatedAt  DateTime @updatedAt
+  updatedById String?
+
+  @@unique([resortId, key])
+}
+
+model Page {
+  id          String   @id @default(cuid())
+  resortId    String
+  resort      Resort   @relation(fields: [resortId], references: [id], onDelete: Cascade)
+  slug        String
+  title       String
+  body        String   // JSON-encoded
+  seoTitle    String?
+  seoDesc     String?
+  ogImage     String?
+  published   Boolean  @default(true)
+  updatedAt   DateTime @updatedAt
+  updatedById String?
+
+  @@unique([resortId, slug])
+}
+
+model GalleryCategory {
+  id       String  @id @default(cuid())
+  resortId String
+  resort   Resort  @relation(fields: [resortId], references: [id], onDelete: Cascade)
+  slug     String
+  name     String
+  order    Int     @default(0)
+  images   GalleryImage[]
+
+  @@unique([resortId, slug])
+}
+
+model GalleryImage {
+  id           String   @id @default(cuid())
+  resortId     String
+  resort       Resort   @relation(fields: [resortId], references: [id], onDelete: Cascade)
+  categoryId   String
+  category     GalleryCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  url          String
+  publicId     String
+  alt          String?
+  caption      String?
+  displayOrder Int      @default(0)
+  isFeatured   Boolean  @default(false)
+  hidden       Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  @@index([resortId, categoryId, displayOrder])
+}
+
+model Review {
+  id           String   @id @default(cuid())
+  resortId     String
+  resort       Resort   @relation(fields: [resortId], references: [id], onDelete: Cascade)
+  source       String
+  sourceUrl    String?
+  authorName   String
+  authorAvatar String?
+  rating       Int
+  content      String
+  reviewDate   DateTime?
+  isFeatured   Boolean  @default(false)
+  status       String   @default("DRAFT")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([resortId, status, isFeatured, reviewDate])
+}
+
+model NearbyAttraction {
+  id          String   @id @default(cuid())
+  resortId    String
+  resort      Resort   @relation(fields: [resortId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  imageUrl    String?
+  distanceKm  Float?
+  travelTime  String?
+  category    String?
+  mapUrl      String?
+  order       Int      @default(0)
+  active      Boolean  @default(true)
+}
+
+model AmenitySection {
+  id            String   @id @default(cuid())
+  resortId      String
+  resort        Resort   @relation(fields: [resortId], references: [id], onDelete: Cascade)
+  key           String
+  title         String
+  body          String
+  icon          String?
+  imageUrl      String?
+  imagePublicId String?
+  order         Int      @default(0)
+  active        Boolean  @default(true)
+
+  @@unique([resortId, key])
+}
+
+// ─── Audit & notifications ──────────────────────────────────────────
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  resortId    String
+  resort      Resort   @relation(fields: [resortId], references: [id], onDelete: Cascade)
+  actorType   String
+  actorId     String?
+  staff       Staff?   @relation(fields: [actorId], references: [id])
+  action      String
+  entity      String?
+  entityId    String?
+  beforeData  String?  // JSON-encoded
+  afterData   String?  // JSON-encoded
+  ip          String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  @@index([resortId, entity, entityId, createdAt])
+  @@index([resortId, actorId, createdAt])
+  @@index([resortId, action, createdAt])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  resortId  String
+  resort    Resort   @relation(fields: [resortId], references: [id], onDelete: Cascade)
+  audience  String
+  type      String
+  channel   String
+  title     String
+  body      String?
+  link      String?
+  readAt    DateTime?
+  sentAt    DateTime?
+  failedAt  DateTime?
+  failureReason String?
+  createdAt DateTime @default(now())
+
+  @@index([resortId, audience, readAt, createdAt])
+  @@index([resortId, type, createdAt])
+}

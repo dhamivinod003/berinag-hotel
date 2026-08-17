@@ -1,0 +1,69 @@
+# Sun & Water Resort — local development stack
+# Currently only nginx for the frontend. Backend services (api, postgres,
+# redis) will be added in a later milestone.
+
+version: "3.9"
+
+services:
+  frontend:
+    image: node:20-alpine
+    container_name: swr-frontend
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+    command: sh -c "npm install && npm run dev"
+    stdin_open: true
+    tty: true
+
+  # backend:
+  #   image: node:20-alpine
+  #   container_name: swr-backend
+  #   working_dir: /app
+  #   volumes:
+  #     - ./backend:/app
+  #   ports:
+  #     - "4000:4000"
+  #   environment:
+  #     - DATABASE_URL=postgresql://swr:swr@db:5432/swr
+  #     - REDIS_URL=redis://redis:6379
+  #   depends_on:
+  #     - db
+  #     - redis
+  #   command: sh -c "npm install && npx prisma migrate dev && npm run dev"
+
+  # db:
+  #   image: postgres:16-alpine
+  #   container_name: swr-db
+  #   environment:
+  #     - POSTGRES_USER=swr
+  #     - POSTGRES_PASSWORD=swr
+  #     - POSTGRES_DB=swr
+  #   volumes:
+  #     - postgres-data:/var/lib/postgresql/data
+  #   ports:
+  #     - "5432:5432"
+
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: swr-redis
+  #   ports:
+  #     - "6379:6379"
+
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: swr-nginx
+  #   volumes:
+  #     - ./nginx/sunandwater.conf:/etc/nginx/conf.d/default.conf:ro
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   depends_on:
+  #     - frontend
+  #     - backend
+
+# volumes:
+#   postgres-data:

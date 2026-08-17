@@ -1,0 +1,155 @@
+// Canonical permission keys. Code checks `can(staff, 'BOOKING_CANCEL')`,
+// never `if (role === 'Manager')`. Roles are just bundles of these.
+
+export const PERMISSIONS = [
+  // Bookings
+  "BOOKING_VIEW",
+  "BOOKING_CREATE",
+  "BOOKING_CREATE_WALKIN",
+  "BOOKING_CREATE_PHONE",
+  "BOOKING_MODIFY",
+  "BOOKING_CANCEL",
+  "BOOKING_CONFIRM",
+  "BOOKING_CHECKIN",
+  "BOOKING_CHECKOUT",
+  "BOOKING_ASSIGN_ROOM",
+  "BOOKING_MOVE_ROOM",
+  "BOOKING_EXTEND",
+  "BOOKING_LATE_CHECKOUT",
+  "BOOKING_REFUND",
+  "BOOKING_EXPORT",
+  "BOOKING_IMPORT",
+
+  // Guests
+  "GUEST_VIEW",
+  "GUEST_EDIT",
+  "GUEST_EXPORT",
+
+  // Enquiries
+  "ENQUIRY_VIEW",
+  "ENQUIRY_CREATE",
+  "ENQUIRY_ASSIGN",
+  "ENQUIRY_CONVERT",
+  "ENQUIRY_DELETE",
+
+  // Rooms
+  "ROOM_TYPE_VIEW",
+  "ROOM_TYPE_EDIT",
+  "ROOM_TYPE_PUBLISH",
+  "ROOM_VIEW",
+  "ROOM_EDIT",
+  "ROOM_MAINTENANCE",
+
+  // Pricing
+  "PRICING_VIEW",
+  "PRICING_EDIT",
+  "RATE_PLAN_EDIT",
+  "OFFER_VIEW",
+  "OFFER_EDIT",
+  "OFFER_PUBLISH",
+
+  // Housekeeping
+  "HOUSEKEEPING_VIEW",
+  "HOUSEKEEPING_ASSIGN",
+  "HOUSEKEEPING_UPDATE",
+  "HOUSEKEEPING_CREATE_TASK",
+
+  // Reports
+  "REPORT_VIEW",
+  "REPORT_EXPORT",
+  "REVENUE_VIEW",
+
+  // CMS
+  "CMS_HERO_EDIT",
+  "CMS_PAGE_EDIT",
+  "CMS_GALLERY_EDIT",
+  "CMS_GALLERY_UPLOAD",
+  "CMS_REVIEW_EDIT",
+  "CMS_ATTRACTION_EDIT",
+  "CMS_AMENITY_EDIT",
+
+  // Staff
+  "STAFF_VIEW",
+  "STAFF_CREATE",
+  "STAFF_EDIT",
+  "STAFF_SUSPEND",
+  "RBAC_EDIT",
+
+  // System
+  "SETTINGS_VIEW",
+  "SETTINGS_EDIT",
+  "AUDIT_LOG_VIEW",
+  "NOTIFICATION_VIEW",
+  "NOTIFICATION_BROADCAST",
+] as const;
+
+export type PermissionKey = (typeof PERMISSIONS)[number];
+
+export const PERMISSION_GROUPS: Record<string, PermissionKey[]> = {
+  bookings: [
+    "BOOKING_VIEW",
+    "BOOKING_CREATE",
+    "BOOKING_CREATE_WALKIN",
+    "BOOKING_CREATE_PHONE",
+    "BOOKING_MODIFY",
+    "BOOKING_CANCEL",
+    "BOOKING_CONFIRM",
+    "BOOKING_CHECKIN",
+    "BOOKING_CHECKOUT",
+    "BOOKING_ASSIGN_ROOM",
+    "BOOKING_MOVE_ROOM",
+    "BOOKING_EXTEND",
+    "BOOKING_LATE_CHECKOUT",
+    "BOOKING_REFUND",
+    "BOOKING_EXPORT",
+    "BOOKING_IMPORT",
+  ],
+  guests: ["GUEST_VIEW", "GUEST_EDIT", "GUEST_EXPORT"],
+  enquiries: [
+    "ENQUIRY_VIEW",
+    "ENQUIRY_CREATE",
+    "ENQUIRY_ASSIGN",
+    "ENQUIRY_CONVERT",
+    "ENQUIRY_DELETE",
+  ],
+  rooms: [
+    "ROOM_TYPE_VIEW",
+    "ROOM_TYPE_EDIT",
+    "ROOM_TYPE_PUBLISH",
+    "ROOM_VIEW",
+    "ROOM_EDIT",
+    "ROOM_MAINTENANCE",
+  ],
+  pricing: [
+    "PRICING_VIEW",
+    "PRICING_EDIT",
+    "RATE_PLAN_EDIT",
+    "OFFER_VIEW",
+    "OFFER_EDIT",
+    "OFFER_PUBLISH",
+  ],
+  housekeeping: [
+    "HOUSEKEEPING_VIEW",
+    "HOUSEKEEPING_ASSIGN",
+    "HOUSEKEEPING_UPDATE",
+    "HOUSEKEEPING_CREATE_TASK",
+  ],
+  reports: ["REPORT_VIEW", "REPORT_EXPORT", "REVENUE_VIEW"],
+  cms: [
+    "CMS_HERO_EDIT",
+    "CMS_PAGE_EDIT",
+    "CMS_GALLERY_EDIT",
+    "CMS_GALLERY_UPLOAD",
+    "CMS_REVIEW_EDIT",
+    "CMS_ATTRACTION_EDIT",
+    "CMS_AMENITY_EDIT",
+  ],
+  staff: ["STAFF_VIEW", "STAFF_CREATE", "STAFF_EDIT", "STAFF_SUSPEND", "RBAC_EDIT"],
+  system: [
+    "SETTINGS_VIEW",
+    "SETTINGS_EDIT",
+    "AUDIT_LOG_VIEW",
+    "NOTIFICATION_VIEW",
+    "NOTIFICATION_BROADCAST",
+  ],
+};

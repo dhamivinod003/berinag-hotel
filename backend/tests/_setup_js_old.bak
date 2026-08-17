@@ -1,0 +1,125 @@
+// Vitest test setup. Reuses the existing dev.db (already pushed + seeded).
+// This is faster than running prisma db push in every test run, and the
+// tests clean their own data before each suite.
+import { join } from "node:path";
+import { execSync } from "node:child_process";
+import { existsSync } from "node:fs";
+let prismaInstance;
+export function getPrisma() {
+    if (!prismaInstance)
+        throw new Error("prisma not initialized — call setupTestEnv first");
+    return prismaInstance;
+}
+// For backward compat — returns current prisma.
+export const prisma = new Proxy({}, {
+    get(_t, prop) {
+        if (!prismaInstance)
+            throw new Error("prisma not initialized — call setupTestEnv first");
+        return prismaInstance[prop];
+    },
+});
+export async function setupTestEnv() {
+    const dbPath = join(process.cwd(), "prisma", "dev.db");
+    if (!existsSync(dbPath)) {
+        // First run — create the schema.
+        process.env.DATABASE_URL = `file:${dbPath}`;
+        execSync("npx prisma db push --skip-generate --accept-data-loss", {
+            stdio: "inherit",
+            env: { ...process.env, DATABASE_URL: process.env.DATABASE_URL },
+        });
+    }
+    else {
+        process.env.DATABASE_URL = `file:${dbPath}`;
+    }
+    process.env.NODE_ENV = "test";
+    process.env.JWT_ACCESS_SECRET = "test_secret_test_secret_test_secret_test_secret_xx";
+    process.env.JWT_REFRESH_SECRET = "test_secret_test_secret_test_secret_test_secret_yy";
+    process.env.HOLD_DURATION_MINUTES = "10";
+    process.env.PORT = "0";
+    const { prisma: appPrisma } = await import("../src/config/database.js");
+    prismaInstance = appPrisma;
+    return prismaInstance;
+}
+export async function teardownTestEnv() {
+    // Don't disconnect — the singleton is shared with the app.
+    prismaInstance = null;
+}
+export async function seedMinimalResort() {
+    // Wipe all domain data (keep schema).
+    // Order matters: tables with FKs first.
+    await prisma.reservationEvent.deleteMany({});
+    await prisma.bookingNote.deleteMany({});
+    await prisma.roomAssignment.deleteMany({});
+    await prisma.roomMovement.deleteMany({});
+    await prisma.extensionRequest.deleteMany({});
+    await prisma.payment.deleteMany({});
+    await prisma.reservation.deleteMany({});
+    await prisma.reservationHold.deleteMany({});
+    await prisma.guest.deleteMany({});
+    await prisma.housekeepingTask.deleteMany({});
+    await prisma.maintenanceRecord.deleteMany({});
+    await prisma.enquiryNote.deleteMany({});
+    await prisma.enquiry.deleteMany({});
+    await prisma.auditLog.deleteMany({});
+    await prisma.passwordReset.deleteMany({});
+    await prisma.staffSession.deleteMany({});
+    await prisma.room.deleteMany({});
+    await prisma.roomTypeAmenity.deleteMany({});
+    await prisma.roomTypePhoto.deleteMany({});
+    await prisma.roomType.deleteMany({});
+    await prisma.offerRoomType.deleteMany({});
+    await prisma.offer.deleteMany({});
+    await prisma.amenity.deleteMany({});
+    await prisma.rolePermission.deleteMany({});
+    await prisma.role.deleteMany({});
+    await prisma.permission.deleteMany({});
+    await prisma.websiteSetting.deleteMany({});
+    await prisma.websiteSection.deleteMany({});
+    await prisma.page.deleteMany({});
+    await prisma.galleryImage.deleteMany({});
+    await prisma.galleryCategory.deleteMany({});
+    await prisma.review.deleteMany({});
+    await prisma.nearbyAttraction.deleteMany({});
+    await prisma.amenitySection.deleteMany({});
+    await prisma.roomRate.deleteMany({});
+    await prisma.pricingRule.deleteMany({});
+    await prisma.ratePlan.deleteMany({});
+    await prisma.notification.deleteMany({});
+    await prisma.staff.deleteMany({});
+    await prisma.resort.deleteMany({});
+    const resort = await prisma.resort.create({
+        data: {
+            slug: "test",
+            name: "Test Resort",
+            phone: "+91 1",
+            email: "t@e.st",
+            address: "addr",
+            city: "city",
+            state: "state",
+        },
+    });
+    const passwordHash = await (await import("bcryptjs")).default.hash("changeme123", 4);
+    const owner = await prisma.staff.create({
+        data: {
+            resortId: resort.id, email: "owner@test.com", name: "Owner", roleKey: "OWNER",
+            passwordHash, status: "ACTIVE", emailVerifiedAt: new Date(),
+        },
+    });
+    await prisma.staff.create({
+        data: {
+            resortId: resort.id, email: "rec@test.com", name: "Rec", roleKey: "RECEPTION",
+            passwordHash, status: "ACTIVE", emailVerifiedAt: new Date(),
+        },
+    });
+    const rt = await prisma.roomType.create({
+        data: {
+            resortId: resort.id, slug: "single", name: "Single",
+            maxAdults: 2, maxOccupancy: 2, basePrice: 100000, totalUnits: 1,
+        },
+    });
+    await prisma.room.create({
+        data: { resortId: resort.id, roomTypeId: rt.id, roomNumber: "R1" },
+    });
+    return { resort, owner, roomType: rt, passwordHash };
+}
+//# sourceMappingURL=setup.js.map
